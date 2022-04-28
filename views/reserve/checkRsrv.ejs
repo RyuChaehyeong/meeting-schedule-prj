@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link href="stylesheets/style.css" rel="stylesheet">
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <meta charset="utf-8">
+        <title>예약확인</title>
+        <script>
+            $(document).ready(function () {
+                const rsrv_sn = '<%= rsrv_sn %>';
+                $.ajax({
+                    contentType:'application/json',
+                    dataType:'json',
+                    url:'/reserve/' + rsrv_sn,
+                    type:'get',
+                    success:function(result){
+                        console.log(result.data);
+                        const rsrvData = result.data;
+                        $('#user_email').val(rsrvData.user_email);
+                        $('#room').val(rsrvData.Ch_meet_room.room_name);
+                        console.log(rsrvData.start.length);
+                        $('#start').val(rsrvData.start.substr(0, 16));
+                        $('#end').val(rsrvData.end.substr(0, 16));
+                        $('#headnum').val(rsrvData.headnum);
+                    },
+
+                    error:function(){
+
+                    }
+                });
+
+                $('#btnModify').click(function () {
+                    $('#room_cd').removeAttr('hidden');
+                    $('#start_dt').removeAttr('hidden');
+                    $('#end_dt').removeAttr('hidden');
+                    $('#btnModiCompl').removeAttr('hidden');
+                    $('#headnum').removeAttr('readonly') ;
+
+                    $('#btnModify').hide();
+                    $('#btnDelete').hide();
+                    $('#start').hide();
+                    $('#end').hide();
+                    $('#room').hide();
+                });
+
+                $('#btnModiCompl').click(function () {
+                  var token = localStorage.getItem("token");
+                  const room_cd = $('#room_cd').val();
+                  const start_dt = $('#start_dt').val();
+                  const end_dt = $('#end_dt').val();
+                  const headnum = $('#headnum').val().toString();
+                  
+                  const timeVali = timeValidation(start_dt, end_dt);
+                  if (timeVali !== false) {
+                    contentValidation(headnum);
+                  } else {
+                    return false;
+                  }
+
+                  const data = {
+                      room_cd,
+                      start_dt,
+                      end_dt,
+                      headnum
+                  };
+
+                  $.ajax({
+                    url: "/reserve/" + rsrv_sn,
+                    type: "PUT",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                      xhr.setRequestHeader("Content-type","application/json");
+                      xhr.setRequestHeader("Authorization","Bearer " + token);
+                    },
+                    success: function(data) {
+                      if (data.result === 'success') {
+                        alert('예약수정 완료');
+                        window.open("about:blank", "_self").close();
+                        opener.document.location.reload();
+                        
+                      } 
+                    },
+                    error:function(request,status,error){
+                      if (request.responseJSON.message === 'already exist') {
+                        alert('해당 시간에 이미 다른 예약이 존재합니다.');
+                        return false;
+                      }
+                     
+                    }                      
+                  });
+
+                });
+
+                $('#btnDelete').click(function () {
+                    
+                    if (confirm("삭제하시겠습니까?") == true) {
+
+                        var token = localStorage.getItem("token");
+                        $.ajax({
+                            url: "/reserve/" + rsrv_sn,
+                            type: "DELETE",
+                            beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Content-type","application/json");
+                            xhr.setRequestHeader("Authorization","Bearer " + token);
+                            },
+                            success: function(data) {
+                                if (data.result === 'success') {
+                                    
+                                    alert('해당 예약이 삭제되었습니다.');
+                                    window.open("about:blank", "_self").close();
+                                    opener.document.location.reload();
+                                    
+                                } 
+                            }                      
+                        });
+
+                    } else { 
+
+                        return false;
+
+                    }
+
+                  
+
+                });
+
+            });
+        </script>
+        <style>
+            .input-group-text {
+                width: 130px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            
+                <div class="mainbox" style="width: 100%; padding: 20px;">
+                        <div id="titleBack">
+                            예약 확인하기
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">예약자 이메일</span>
+                            <input type="text" min="0" class="form-control" id="user_email" name="user_email" readonly>
+                        </div>
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="room_cd">회의실</label>
+                            <select class="form-select" id="room_cd" name="room_cd" style="width: 85%;" hidden>
+                                <option selected>회의실 선택</option>
+                                <option value="A01">3층 대회의실</option>
+                                <option value="A02">3층 중회의실</option>
+                                <option value="B01">4층 대회의실</option>
+                            </select>
+                            <input type="text" class="form-control" id="room" name="room" readonly>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">예약시작-종료</span>
+                            <input type="datetime-local" class="form-control" id="start_dt" name="start_dt" hidden>
+                            <input type="datetime-local" class="form-control" id="end_dt" name="end_dt" hidden>
+                            <input type="text" class="form-control" id="start" name="start" readonly>
+                            <input type="text" class="form-control" id="end" name="end" readonly>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">인 원 수</span>
+                            <input type="number" min="0" class="form-control" id="headnum" name="headnum" readonly>
+                        </div>
+                        <br>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-light" id="btnModify">수정</button>
+                            <button class="btn btn-light" id="btnModiCompl" hidden>수정완료</button>
+                            <button class="btn btn-light" id="btnDelete">삭제</button>
+                        </div>
+
+                </div>
+            </div>
+
+        </body>
+        <script src="javascripts/reserve/registerValidation.js"></script>
+    </html>

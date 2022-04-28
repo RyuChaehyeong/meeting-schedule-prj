@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link href="stylesheets/style.css" rel="stylesheet">
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <meta charset="utf-8">
+        <title>로그인</title>
+        <script>
+            $(document).ready(function () {
+                $('#btnLogin').click(function () {
+                  const email = $('#user_email').val();
+                  const password = $('#password').val();
+                  console.log(email);
+                  console.log(password);
+
+                  const data = {
+                      user_email: email,
+                      password
+                  };
+
+                  $.ajax({
+                      type: "POST",
+                      url: "/auth/signin",
+                      data: data,
+                      dataType: "json",
+                      success: function (data, textStatus, xhr) {
+                          if (data.result === 'success') {
+                              const token = data.token;
+                              localStorage.setItem("token", token);
+                              window.location.href = '/';
+                          } 
+                      },
+                      error: function (request, status, error) {
+                          alert("code:" + request.status + "\nerror:" + error);
+                      }
+                  });
+              });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <%-include('navbar.ejs') %>
+                <div class="mainbox" style="width: 100%; padding: 100px;">
+                    <div>
+
+                        <div class="mb-3">
+                            <label for="user_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" name="user_email" id="user_email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" id="password">
+                        </div>
+                        <div class="d-grid gap-2 d-md-block">
+                            <button class="btn btn-light" id="btnLogin">로그인</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </body>
+
+    </html>

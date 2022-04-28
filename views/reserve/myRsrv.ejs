@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link href="stylesheets/style.css" rel="stylesheet">
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <meta charset="utf-8">
+        <title>주간현황</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+        <script src='node_modules/fullcalendar/main.js'></script>
+        <link rel="stylesheet" href="node_modules/fullcalendar/main.css">
+        <style>
+            #titleBack {
+                background-color: rgb(228, 228, 228);
+                height: 50px; 
+                margin-bottom: 20px;
+                text-align: center;
+                font-weight: bold;
+                padding-top: 14px;
+                font-size: large;
+            }
+
+        </style>
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    dateClick: function(info) {
+                        const selectedDate = moment(info.date).format('YYYY-MM-DDThh:mm');
+                        window.open('/makeRsrv?dt=' + selectedDate, '_blank', 'width=1000, height=350');
+                        return false;
+                    },
+                    eventClick: function(info) {
+                        const rsrv_sn = info.event.extendedProps.rsrv_sn;
+                        window.open('/checkRsrv?no=' + rsrv_sn, '_blank', 'width=1000, height=400');
+                    }
+                });
+
+                const rsvrList = [];
+                var token = localStorage.getItem("token");
+
+                $.ajax({
+                    contentType:'application/json',
+                    dataType:'json',
+                    url:'/reserve/mylist',
+                    type:'get',
+                    beforeSend: function (xhr) {
+                      xhr.setRequestHeader("Content-type","application/json");
+                      xhr.setRequestHeader("Authorization","Bearer " + token);
+                    },
+                    success:function(result){
+                        const resultArr = result.data;
+                        for(i=0; i<resultArr.length; i++) {
+                            resultArr[i].title = resultArr[i].Ch_meet_room.room_name + "(" + resultArr[i].user_email + ")";
+                            calendar.addEvent(resultArr[i]);
+                        }
+                    
+                    },
+                    error:function(){
+
+                    }
+                });
+            
+                calendar.render();
+            });
+            
+        </script>
+        <style>
+
+        </style>
+    </head>
+
+	<body>
+    <div class="container">
+      <%-include('../navbar.ejs') %>
+      <div class="mainbox" style="width: 100%; margin-top: 15px;">
+        <div>
+            <div id="titleBack">
+                나의 회의실 예약 내역
+            </div>
+
+
+            <br>
+            <div class="mainbox">
+                <div id='calendar'></div>
+            </div>
+        </div>
+      </div>
+    </div>
+    
+    </body>
+    
+</html>

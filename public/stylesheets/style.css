@@ -1,0 +1,24 @@
+body {
+  padding: 10px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: hwb(244 0% 0%);
+}
+
+#titleBack {
+  background-color: rgb(228, 228, 228);
+  height: 50px; 
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 14px;
+  font-size: large;
+}
+
+#inputGroupMeetRoom {
+  width: 82%;
+}
+
+

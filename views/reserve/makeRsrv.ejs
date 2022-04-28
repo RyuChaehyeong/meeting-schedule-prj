@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link href="stylesheets/style.css" rel="stylesheet">
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+        <meta charset="utf-8">
+        <title>예약하기</title>
+        <script>
+            $(document).ready(function () {
+
+                //calendar date click, 선택한 날짜 insert
+                const selectedDate = '<%= selectedDate %>';
+                $('#start_dt').val(selectedDate);
+                $('#end_dt').val(selectedDate);
+
+                $('#btnRsrv').click( async () => {
+                  var token = localStorage.getItem("token");
+                  const room_cd = $('#room_cd').val();
+                  const start_dt = $('#start_dt').val();
+                  const end_dt = $('#end_dt').val();
+                  const headnum = $('#headnum').val().toString();
+                  
+                  const timeVali = timeValidation(start_dt, end_dt);
+                  if (timeVali !== false) {
+                    contentValidation(headnum);
+                  } else {
+                    return false;
+                  }
+
+                  const data = {
+                      room_cd,
+                      start_dt,
+                      end_dt,
+                      headnum
+                  };
+
+                  //makeResult = await reserve(data, token);
+                  //reserve()의 resolve(결과) 값을 makeResult로 받음
+                  reserve(data, token)
+                  .then(makeResult => {
+                    if (makeResult) {
+                      $.ajax({
+                        url: "/push/rsrvNotice",
+                        type: "POST",
+                        data: JSON.stringify(data),
+                        dataType: 'json',
+                        beforeSend: function (xhr) {
+                          xhr.setRequestHeader("Content-type","application/json");
+                          xhr.setRequestHeader("Authorization","Bearer " + token);
+                        },
+                        success: function(data) {
+                          
+                        },
+                        error:function(request,status,error){
+
+                        }
+                                        
+                      });
+                    }        
+                  }).catch(err => {
+                    console.error(err);
+                  });
+                 
+
+                });
+
+            });
+
+            function reserve(data, token){
+              return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: "/reserve",
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                      xhr.setRequestHeader("Content-type","application/json");
+                      xhr.setRequestHeader("Authorization","Bearer " + token);
+                    },
+                    success: function(data) {
+                      console.log(data.result);
+                      if (data.result === 'success') {
+                        alert('예약등록 완료');
+                        window.open("about:blank", "_self").close();
+                        opener.document.location.reload();
+                        resolve(true);
+                      } 
+                    },
+                    error:function(request,status,error){
+                      if (request.responseJSON.message === 'already exist') {
+                        alert('해당 시간에 이미 다른 예약이 존재합니다.');
+                        resolve(false);
+                      }                     
+                    }                                       
+                  });
+              });
+            }
+        </script>
+        <style>
+            .input-group-text {
+                width: 130px;
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            
+                <div class="mainbox" style="width: 100%; padding: 10px;">
+                        <div id="titleBack">
+                            회의실 예약하기
+                        </div>
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="room_cd">회의실 선택</label>
+                            <select class="form-select" id="room_cd" name="room_cd" style="width: 85%;">
+                            <option value="A01">3층 대회의실</option>
+                            <option value="A02">3층 중회의실</option>
+                            <option value="B01">4층 대회의실</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">예약시작-종료</span>
+                            <input type="datetime-local" class="form-control" id="start_dt" name="start_dt">
+                            <input type="datetime-local" class="form-control" id="end_dt" name="end_dt">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">인 원 수</span>
+                            <input type="number" min="0" class="form-control" id="headnum" name="headnum">
+                        </div>
+                        <br>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-light" id="btnRsrv">예약하기</button>
+                        </div>
+
+                </div>
+            </div>
+
+        </body>
+        <script src="javascripts/reserve/registerValidation.js"></script>
+    </html>

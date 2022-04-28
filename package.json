@@ -1,0 +1,40 @@
+{
+  "name": "myapp",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "start:dev": "set DEBUG=myapp:* & nodemon ./bin/www"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "bcrypt": "^5.0.1",
+    "bootstrap": "4.6",
+    "connect-flash": "^0.1.1",
+    "cookie": "^0.4.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^16.0.0",
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "express-session": "^1.17.2",
+    "firebase-admin": "^10.0.2",
+    "fullcalendar": "^5.10.2",
+    "http-errors": "~1.6.3",
+    "jquery": "^3.6.0",
+    "jsdom": "^19.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "localStorage": "^1.0.4",
+    "moment": "^2.29.1",
+    "morgan": "~1.9.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
+    "node-cron": "^3.0.0",
+    "node-schedule": "^2.1.0",
+    "passport": "^0.5.2",
+    "passport-local": "^1.0.0",
+    "sequelize": "^6.17.0",
+    "sequelize-cli": "^6.4.1",
+    "session-file-store": "^1.5.0"
+  }
+}
